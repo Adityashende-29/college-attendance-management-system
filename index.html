@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Smart College Attendance</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="loginScreen" class="center-screen">
+    <div class="login-card">
+      <div class="brand">Smart Attendance</div>
+      <h1>College Attendance & Leave Management</h1>
+      <p class="muted">DBMS Mini Project</p>
+      <form id="loginForm">
+        <label>Username</label>
+        <input id="username" type="email" value="admin@college.local" required />
+        <label>Password</label>
+        <input id="password" type="password" value="admin123" required />
+        <button class="primary" type="submit">Login</button>
+      </form>
+      <div class="demo-box">
+        <strong>Demo logins</strong>
+        <div>Admin: admin@college.local / admin123</div>
+        <div>Faculty: faculty@college.local / faculty123</div>
+        <div>Student: student@college.local / student123</div>
+      </div>
+      <div id="loginMessage" class="message"></div>
+    </div>
+  </div>
+
+  <div id="appShell" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand big">Smart Attendance</div>
+      <button data-section="dashboard" class="nav-btn active">Dashboard</button>
+      <button data-section="students" class="nav-btn">Students</button>
+      <button data-section="subjects" class="nav-btn">Subjects</button>
+      <button data-section="attendance" class="nav-btn">Attendance</button>
+      <button data-section="leaves" class="nav-btn">Leave Requests</button>
+      <button id="logoutBtn" class="nav-btn danger">Logout</button>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><h2 id="pageTitle">Dashboard</h2><span id="roleText" class="pill"></span></div>
+        <span id="health" class="health">Checking DB...</span>
+      </header>
+
+      <section id="dashboard" class="section active">
+        <div class="cards">
+          <div class="stat-card"><span>Students</span><strong id="statStudents">-</strong></div>
+          <div class="stat-card"><span>Subjects</span><strong id="statSubjects">-</strong></div>
+          <div class="stat-card"><span>Faculty</span><strong id="statFaculty">-</strong></div>
+          <div class="stat-card"><span>Low Attendance</span><strong id="statLow">-</strong></div>
+        </div>
+        <div class="panel">
+          <h3>Project Highlights</h3>
+          <div class="grid two">
+            <div><b>CRUD</b><p>Create, read, update and delete students/subjects.</p></div>
+            <div><b>Relationships</b><p>Departments, students, faculty, subjects and attendance linked through foreign keys.</p></div>
+            <div><b>Advanced SQL</b><p>JOINs, views, stored procedures and a trigger.</p></div>
+            <div><b>Transactions</b><p>Attendance batches are saved using COMMIT/ROLLBACK.</p></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="students" class="section">
+        <div class="panel">
+          <div class="panel-head"><h3>Students</h3><button class="secondary" onclick="loadStudents()">Refresh</button></div>
+          <div class="form-grid">
+            <input id="stuRoll" placeholder="Roll No" />
+            <input id="stuName" placeholder="Name" />
+            <input id="stuEmail" placeholder="Email" />
+            <input id="stuPhone" placeholder="Phone" />
+            <select id="stuDept"><option value="1">CSE</option><option value="2">ETC</option><option value="3">ME</option></select>
+            <select id="stuYear"><option>1</option><option selected>2</option><option>3</option><option>4</option></select>
+            <select id="stuSection"><option>A</option><option>B</option><option>C</option></select>
+            <button class="primary" onclick="addStudent()">Add Student</button>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>ID</th><th>Roll</th><th>Name</th><th>Email</th><th>Year</th><th>Sec</th><th>Dept</th><th>Action</th></tr></thead><tbody id="studentRows"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="subjects" class="section">
+        <div class="panel">
+          <div class="panel-head"><h3>Subjects</h3><button class="secondary" onclick="loadSubjects()">Refresh</button></div>
+          <div class="form-grid">
+            <input id="subCode" placeholder="Code (e.g. DBMS)" />
+            <input id="subName" placeholder="Subject name" />
+            <input id="subSem" type="number" min="1" max="8" value="4" placeholder="Semester" />
+            <input id="subCredits" type="number" min="1" max="8" value="4" placeholder="Credits" />
+            <button class="primary" onclick="addSubject()">Add Subject</button>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>ID</th><th>Code</th><th>Name</th><th>Semester</th><th>Credits</th><th>Action</th></tr></thead><tbody id="subjectRows"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="attendance" class="section">
+        <div class="panel">
+          <div class="panel-head"><h3>Attendance Summary</h3><button class="secondary" onclick="loadAttendance()">Refresh</button></div>
+          <div class="callout">The summary is generated from the MySQL view <code>v_student_attendance_summary</code>.</div>
+          <div class="table-wrap"><table><thead><tr><th>Roll</th><th>Student</th><th>Subject</th><th>Total</th><th>Present</th><th>Absent</th><th>%</th><th>Status</th></tr></thead><tbody id="attendanceRows"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="leaves" class="section">
+        <div class="panel">
+          <div class="panel-head"><h3>Leave Requests</h3><button class="secondary" onclick="loadLeaves()">Refresh</button></div>
+          <div class="form-grid">
+            <input id="leaveStudent" type="number" placeholder="Student ID" value="1" />
+            <input id="leaveFrom" type="date" />
+            <input id="leaveTo" type="date" />
+            <input id="leaveReason" placeholder="Reason" />
+            <button class="primary" onclick="addLeave()">Apply Leave</button>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>ID</th><th>Student</th><th>From</th><th>To</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead><tbody id="leaveRows"></tbody></table></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
